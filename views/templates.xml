@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2015-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- "License URL : <https://store.webkul.com/license.html/>" -->
+<odoo>
+
+    <!-- <template id="assets_frontend" inherit_id="web.assets_frontend">
+        <xpath expr="//link[last()]" position="after">
+            <link rel="stylesheet" type="text/css" href="/web_to_print/static/src/css/webtoprint.css"/>
+        </xpath>
+        <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/web_to_print/static/src/js/fabric.min.js"/>
+            <script type="text/javascript" src="/web_to_print/static/src/js/web_to_print.js"/>
+        </xpath>
+    </template>
+    <template id="assets_backend" inherit_id="web.assets_backend">
+       <xpath expr="//script[last()]" position="after">
+            <script type="text/javascript" src="/web_to_print/static/src/js/area_select.js"/>
+        </xpath>
+    </template> -->
+    <template id="custom_product" name="Custom Product">
+        <t t-set="active_area" t-value="min(product.custom_area_ids.mapped('sequence'))"/>
+        <!-- notification sub template -->
+        <t t-call="website.layout">
+            <div class="wk_loader"></div>
+            <div class="modal fade" id="preview-design-modal">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Preview</h4>
+                            <span type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            X
+                            </span>
+                        </div>
+                        <div class="modal-body justify-content-center">
+                            <img class="mx-auto img-fluid" src="" alt=""/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="add-to-cart-modal">
+                <t t-set="combination" t-value="product.product_tmpl_id._get_first_possible_combination()"/>
+                <t t-set="combination_info" t-value="product.product_tmpl_id._get_combination_info(combination, add_qty=add_qty or 1)"/>
+                <t t-set="product_variant" t-value="product"/>
+
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title bold">Add to cart</h4>
+                            <span type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            X
+                            </span>
+                        </div>
+                        <div class="modal-body container oe_website_sale">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col col-7 mx-auto"></div>
+                                        <!-- <div class="col col-5 d-flex flex-wrap"></div> -->
+                                    </div>
+                                    <div class="row">
+                                        <div class="col col-5 d-flex justify-content-center mx-auto"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <form action="/shop/cart/update" method="POST">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()" />
+                                        <div class="js_product js_main_product">
+                                            <t t-placeholder="select">
+                                                <input type="hidden" class="product_id" name="product_id" t-att-value="product.id" />
+                                                <input type="hidden" class="product_template_id" name="product_template_id" t-att-value="product.product_tmpl_id.id" />
+                                                <input type="hidden" name="web_to_print_order" id="" value="True"/>
+                                                <t t-foreach="product.custom_area_ids" t-as="area">
+                                                    <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_design"/>
+                                                    <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_text"/>
+                                                    <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_image"/>
+                                                    <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_image_name"/>
+                                                </t>
+
+                                            </t>
+                                            <h4>
+                                                <span t-field="product.display_name" />
+                                            </h4>
+                                            <h4 class="oe_price_h4 css_editable_mode_hidden">
+                                                <span t-attf-class="text-danger oe_default_price {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="text-decoration: line-through; white-space: nowrap;" t-esc="product.lst_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" />
+                                                <b class="oe_price" style="white-space: nowrap;" t-esc="product.lst_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                                <span itemprop="price" style="display:none;" t-esc="product.lst_price"/>
+                                                <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
+                                            </h4>
+                                            <p t-if="True" class="css_not_available_msg alert alert-warning">This combination does not exist.</p>
+                                            <div class="css_quantity input-group" contenteditable="false">
+                                                <div class="input-group-prepend pe-1">
+                                                    <a t-attf-href="#" class="btn btn-secondary js_add_cart_json" aria-label="Remove one" title="Remove one">
+                                                        <i class="fa fa-minus"></i>
+                                                    </a>
+                                                </div>
+                                                <input type="text" class="form-control text-center quantity" data-min="1" name="add_qty" t-att-value="add_qty or 1"/>
+                                                <div class="input-group-append ps-1">
+                                                    <a t-attf-href="#" class="btn btn-secondary float_left js_add_cart_json" aria-label="Add one" title="Add one">
+                                                        <i class="fa fa-plus"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="form-check mt8 mb8" t-if="wtp_tnc">
+                                                <input required="required" class="form-check-input web-to-print-confirm" type="checkbox" />
+                                                <span class="" for="defaultCheck1">
+                                                    <t t-esc="wtp_tnc"/>
+                                                </span>
+                                            </div>
+                                            <a role="button" id="buy_now" t-att-class="'%s btn btn-primary mt16 js_check_product a-submit d-block d-sm-inline-block'%('disabled' if wtp_tnc else '')" href="#">
+                                                <i class="fa fa-shopping-cart"/>
+ Add to Cart</a>
+                                            <div id="product_option_block"/>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <section class="container oe_website_sale">
+                <div class="row mt16 mb16">
+                    <div class="col-md-8">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a t-att-href="keep(category=0)">Products</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a t-att-href="keep('/shop/product/%s' % slug(product.product_tmpl_id) ,category=0)">
+                                    <t t-esc="product.product_tmpl_id.name"/>
+                                </a>
+                            </li>
+                            <li t-if="category" class="breadcrumb-item">
+                                <a t-att-href="keep('/shop/category/%s' % slug(category), category=0)" t-field="category.name" />
+                            </li>
+                            <li class="breadcrumb-item active">
+                                <span t-field="product.name" />
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="tab-content text-center">
+                            <t t-foreach="product.custom_area_ids" t-as="area">
+                                <div role="tabpanel" t-att-data-area-id="area.id" t-att-class="'tab-pane wk_canvas active' if area.sequence == active_area else 'tab-pane wk_canvas' " t-attf-id="area_{{area.id}}" style=" position: relative; background-color: rgb(255, 255, 255);">
+                                    <span class="img-canvas" t-field="area.web_image" t-options="{'widget':'image'}"></span>
+                                    <!-- <canvas class="" t-att-data-area-id="area.id" t-attf-id="base_img_canvas_{{area.id}}" width="500" height="500" style="-webkit-user-select: none;position:absolute;"></canvas> -->
+                                    <div class="border border-dark drawingArea" t-attf-style="position: absolute;top:{{int(float(area.top))}}px;left:{{int(float(area.left))}}px;z-index: 10;width:{{int(float(area.width))}}px;height:{{int(float(area.height))}}px;">
+                                        <canvas t-att-data-area-id="area.id" t-attf-id="tcanvas_{{area.id}}" t-att-width="int(float(area.width))" t-att-height="int(float(area.height))" class="hover" style="-webkit-user-select: none;position:absolute;"></canvas>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                        <ul class="nav justify-content-center mt16 mb16">
+                            <t t-foreach="product.custom_area_ids" t-as="area">
+                                <li class="nav-item border ml8 mr8">
+                                    <a t-att-data-area-id="area.id" data-bs-toggle="tab" role="tab" t-att-class="'nav-link wk-img active ' if area.sequence == active_area else 'nav-link wk-img'" t-attf-href="#area_{{area.id}}">
+                                        <img t-att-src="image_data_uri(area.web_image)" style="width:50px;height:50px;"/>
+                                    </a>
+                                    <span class="d-flex justify-content-center" style="background-color:rgba(0, 0, 0, 0.03);" t-esc="area.name"/>
+                                </li>
+                            </t>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="tab-content">
+                            <t t-foreach="product.custom_area_ids" t-as="area">
+                                <div role="tabpanel" t-attf-id="area_{{area.id}}" t-att-class="'tab-pane editor active' if area.sequence == active_area else 'tab-pane editor'">
+                                    <div id="accordion">
+                                        <div t-if="area.provide_text" style="overflow:inherit;" class="card">
+                                            <div class="card-header pt0 pb0" id="textarea">
+                                                <h5 class="mb-0">
+                                                    <button style="color:black;font-size:15px;" class="text-left btn btn-block btn-link font-weight-bold" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                        <img class="mr8" src="/web_to_print/static/img/text.png" alt=""/>
+                                                            Text <i style="font-size:large;" class="mt4 fa fa-caret-down pull-right"></i>
+                                                    </button>
+                                                    <p style="float: right; margin-top: 10px; margin-bottom: 0;">+ <t t-esc="area.text_charge"/>$</p>
+                                                </h5>
+                                            </div>
+
+                                            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-bs-parent="#accordion">
+                                                <div class="card-body">
+                                                    <div id="text-editor">
+                                                        <div class="btn-group flex-wrap" id="text-editor">
+                                                            <button class="text-bold btn border" data-original-title="Bold">
+                                                                <i class="fa fa-bold"></i>
+                                                            </button>
+                                                            <button class="text-italic btn border" data-original-title="Italic">
+                                                                <i class="fa fa-italic"></i>
+                                                            </button>
+                                                            <button class="text-strike btn border" data-original-title="Italic">
+                                                                <i class="fa fa-strikethrough"></i>
+                                                            </button>
+                                                            <button class="text-underline btn border" data-original-title="Italic">
+                                                                <i class="fa fa-underline"></i>
+                                                            </button>
+                                                            <button class="color-picker btn border">
+                                                                <input class="color-input" type="color" name=""/>
+                                                            </button>
+                                                            <div class="dropdown">
+                                                                <button class="font-family btn border dropdown-toggle" data-bs-toggle="dropdown" title="Font Style">
+                                                                    <i class="fa fa-font" style="width:19px;height:19px;"></i>
+                                                                </button>
+                                                                <ul style="color:black;" class="dropdown-menu" role="menu" aria-labelledby="font-family-X">
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Arial text-center">Arial</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Helvetica text-center">Helvetica</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="MyriadPro text-center">Myriad Pro</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Delicious text-center">Delicious</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Verdana text-center">Verdana</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Georgia text-center">Georgia</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Courier text-center">Courier</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="ComicSansMS text-center">Comic Sans MS</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Impact text-center">Impact</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Monaco text-center">Monaco</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Optima text-center">Optima</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="HoeflerText text-center">Hoefler Text</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Plaster text-center">Plaster</a>
+                                                                    </li>
+                                                                    <li>
+                                                                        <a tabindex="-1" href="#" class="Engagement text-center">Engagement</a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex mt8 ml0 text-input">
+                                                            <textarea class="text-string form-control"></textarea>
+                                                            <button class="add-text ml8 btn btn-primary">Add</button>
+                                                            <button class="btn btn-outline-danger ml8 rm-text">
+                                                                <i class="fa fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div t-if="area.provide_image" style="overflow:inherit;" class="card">
+                                            <div class="card-header pt0 pb0" id="headingTwo">
+                                                <h5 class="mb-0">
+                                                    <button style="color:black;" class="text-left btn btn-block btn-link collapsed font-weight-bold" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                        <img class="mr8" src="/web_to_print/static/img/img.png" alt=""/>
+                                                            Image<i style="font-size:large;" class="mt4 fa fa-caret-down pull-right"></i>
+                                                    </button>
+                                                    <p style="float: right; margin-top: 10px; margin-bottom: 0;">+ <t t-esc="area.image_charge"/>$</p>
+                                                </h5>
+                                            </div>
+                                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-bs-parent="#accordion">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <label class="btn btn-link mb0" t-attf-for="img-name-#{area.id}">
+                                                                <i class="fa fa-upload mr8"/>
+                                                                    Upload image</label>
+                                                            <input class="add-img d-none" type="file" t-attf-id="img-name-#{area.id}"/>
+                                                            <div class="ml32 img-name"></div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <button class=" btn rm-img">
+                                                                <img src="/web_to_print/static/img/icon-delete.png" alt="Delete" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div t-if="area.provide_team_members" style="overflow:inherit;" class="card">
+                                            <div class="card-header pt0 pb0" id="headingTwo">
+                                                <h5 class="mb-0">
+                                                    <button style="color:black;" class="text-left btn btn-block btn-link collapsed font-weight-bold" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                        <img class="mr8" src="/web_to_print/static/img/athlete.png" alt=""/>
+                                                            Team Members<i style="font-size:large;" class="mt4 fa fa-caret-down pull-right"></i>
+                                                    </button>
+                                                    <p style="float: right; margin-top: 10px; margin-bottom: 0;"></p>
+                                                </h5>
+                                            </div>
+                                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-bs-parent="#accordion">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <input type="number" id="num-rows-input" placeholder="Enter the number of players" min="1" class="form-control mb-2"/>
+                                                            <button type="button" id="generate-players-btn" class="btn btn-primary mb-2">Generate Players</button>
+                                                            <div id="dynamic-rows-container"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                        <div id="cautionfileAlert" class="float-end postion-absulate mt-1 toast text-white bg-danger border-0" role="alert" data-delay="3000">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+      Only image type files are allowed.
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                            </div>
+                        <div class=" mt16">
+                            <div class="float-left">
+                                <button class="btn" id="reset-design">
+                                    <u>Reset</u>
+                                </button>
+                            </div>
+                            <div class="float-end mb16">
+                                <button id="preview-design" class="ml16 btn btn-outline-success">Preview</button>
+                                <button id="save-design" data-bs-toggle="modal" data-bs-target="#add-to-cart-modal" class="ml16 btn btn-success">Save and Add to cart</button>
+                            </div>
+                            <div style="display:none;" id="add-cart-msg" class="mt16 mb16 alert alert-danger">No customization done</div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="col-md-1">
+                        <div class="btn-group-vertical">
+                            <button id="design-download" class="btn">
+                                <i class="fa fa-download fa-2x"></i>
+                            </button>
+                            <button id="remove-selected" class="btn">
+                                <i class="fa fa-trash fa-2x"></i>
+                            </button>
+                        </div>
+                    </div> -->
+                </div>
+            </section>
+
+        </t>
+    </template>
+    <template id="template_id" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="after">
+            <div class="d-inline-flex align-items-center mb-2 me-auto">
+                <a t-if="product.is_web_to_print" role="button" id="customize-link" t-attf-class="btn btn-outline-primary ms-1" href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-images" viewBox="0 0 16 16">
+                        <path d="M4.502 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+                        <path d="M14.002 13a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V5A2 2 0 0 1 2 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-1.998 2zM14 2H4a1 1 0 0 0-1 1h9.002a2 2 0 0 1 2 2v7A1 1 0 0 0 15 11V3a1 1 0 0 0-1-1zM2.002 4a1 1 0 0 0-1 1v8l2.646-2.354a.5.5 0 0 1 .63-.062l2.66 1.773 3.71-3.71a.5.5 0 0 1 .577-.094l1.777 1.947V5a1 1 0 0 0-1-1h-10z"/>
+                    </svg>
+                    <span style="font-weight:bold">Customize</span>
+                </a>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="show_design_lines" name="Design Lines Template">
+        <button data-bs-toggle="modal" t-attf-data-bs-target="#design{{line.id}}" class="badge rounded-pill bg-primary"><span>View Customized</span><span> Design</span></button>
+        <div class="modal fade" t-attf-id="design{{line.id}}">
+            <t t-set="first_image" t-value="min(line.design_line_ids.mapped('id'))"/>
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Preview</h4>
+                        <span type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                            X
+                        </span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="tab-content mb8 mt8 mx-auto">
+                            <t t-foreach="line.design_line_ids" t-as="design">
+                                <div role="tabpanel" t-attf-id="design_{{design.id}}" t-att-class="'tab-pane active' if design.id == first_image else 'tab-pane'">
+                                    <img t-att-src="image_data_uri(design.design)" class="mx-auto img-thumbnail" alt=""/>
+                                </div>
+                            </t>
+                        </div>
+                        <ul class="nav justify-content-center mr8 ml8">
+                            <t t-foreach="line.design_line_ids" t-as="design">
+                                <li class="nav-item">
+                                    <a data-bs-toggle="tab" role="tab" t-att-class="'nav-link wk-img active' if design.id == first_image else 'wk-img nav-link'" t-attf-href="#design_{{design.id}}">
+                                        <img t-att-src="image_data_uri(design.design)" style="width:50px;height:50px;"/>
+                                    </a>
+                                    <span class="d-flex justify-content-center" style="background-color:rgba(0, 0, 0, 0.03);" t-esc="design.name"/>
+                                </li>
+                            </t>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="web_to_print_inherit_products_item" inherit_id="website_sale.products_item" name="Web To Print Products item">
+        <xpath expr="//div[hasclass('oe_product_image')]/.." position="inside">
+            <img t-if="product.is_web_to_print" title="Customization Available on this product" class="pull-right" style="z-index: 5; overflow: hidden; position: absolute; top: 0; bottom: auto; right: 0;" src="/web_to_print/static/img/Edit.png" />
+        </xpath>
+    </template>
+
+    <template id="cart_lines_inherit" name="template_name" inherit_id="website_sale.cart_lines">
+        <xpath expr="//t[@t-call='website_sale.cart_line_description_following_lines']" position="after">
+            <t t-if="line.web_to_print_line and line.design_line_ids" t-call="web_to_print.show_design_lines"/>
+        </xpath>
+    </template>
+
+    <template id="sale_order_portal_content_inherit" inherit_id="sale.sale_order_portal_content">
+        <xpath expr="//section[@id='details']//td[@id='product_name']" position="inside">
+            <t t-if="line.web_to_print_line and line.design_line_ids" t-call="web_to_print.show_design_lines"/>
+        </xpath>
+    </template>
+
+    <template id="cart_summary_web_to_print" name="Cart Summary Web To Print" inherit_id="website_sale.checkout_layout">
+        <xpath expr="//td[@name='website_sale_cart_summary_product_name']" position="inside">
+            <t t-if="line.web_to_print_line and line.design_line_ids" t-call="web_to_print.show_design_lines"/>
+        </xpath>
+    </template>
+
+</odoo>

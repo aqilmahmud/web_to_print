@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2015-Present Webkul Software Pvt. Ltd. (<https://webkul.com/>) -->
+<!-- See LICENSE file for full copyright and licensing details. -->
+<!-- "License URL : <https://store.webkul.com/license.html/>" -->
+<odoo>
+    <data noupdate="0">
+        <!-- Add you code here -->
+        <record id="product_template_form_view_web_to_print" model="ir.ui.view">
+            <field name="name">product.template.view.form.inherit</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <div name="options" position="inside">
+                    <div>
+                        <field name="is_web_to_print" />
+                        <label for="is_web_to_print"/>
+                    </div>
+                </div>
+                <xpath expr="//page[@name='inventory']" position="after">
+                    <page name="web_to_print_options" string="Web To Print" invisible="is_web_to_print == False">
+                        <separator string="Add customizable area"/>
+                        <field string="Select Design Area" name="custom_area_ids"/>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="product_custom_area_view_form" model="ir.ui.view">
+            <field name="name">model.name.view.form</field>
+            <field name="model">product.custom.area</field>
+            <field name="arch" type="xml">
+                <form string="">
+                    <sheet>
+                    <div class="oe_title">
+                        <label class="oe_edit_only" for="name" string="Name"/>
+                        <h1><field placeholder="area name" name="name" /></h1>
+                        <!-- <field name="sequence" /> -->
+                        <div>
+                            <field name="provide_image"/>
+                            <label for="provide_image"/>
+                            <field name="image_charge"/>
+                        </div>
+                        <div>
+                            <field name="provide_text"/>
+                            <label for="provide_text"/>
+                            <field name="text_charge"/>
+                        </div>
+                        <div>
+                            <field name="provide_team_members"/>
+                            <label for="provide_team_members"/>
+                        </div>
+                    </div>
+                        <notebook string="Define Area">
+                            <page string="Define Area">
+                            <div class="text-danger"><b>NOTE:</b> Give 500x500 image for better customization</div>
+                                <center>
+                                    <field name="height" invisible="1" force_save="1" />
+                                    <field name="width" invisible="1" force_save="1"/>
+                                    <field name="top" invisible="1" />
+                                    <field name="left" invisible="1" force_save="1"/>
+                                    <field help="Give 500x500 image for better customization" name="web_image"  widget="area_select" required="1"/>
+                                </center>
+                            </page>
+                            <page string="Note">
+                                <field name="note" placeholder="Add note here" />
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="product_custom_area_view_tree" model="ir.ui.view">
+            <field name="name">model.name.view.tree</field>
+            <field name="model">product.custom.area</field>
+            <field name="arch" type="xml">
+                <tree string="">
+                    <field name="sequence" widget="handle" />
+                    <field name="name" />
+                    <field name="provide_text"/>
+                    <field name="text_charge"/>
+                    <field name="provide_image"/>
+                    <field name="image_charge"/>
+                    <field name="provide_team_members"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record id="web_to_print_product_template_action" model="ir.actions.act_window">
+            <field name="name">Web to Print Products</field>
+            <field name="res_model">product.template</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('is_web_to_print','=',True)]</field>
+            <field name="context">{'default_is_web_to_print':True}</field>
+        </record>
+        
+        <menuitem
+            id="web_to_print_product_template_menu"
+            name="Web To Print Products"
+            action="web_to_print_product_template_action"
+            parent="web_to_print_menu"
+            sequence="10"/>
+        
+    </data>
+</odoo>
