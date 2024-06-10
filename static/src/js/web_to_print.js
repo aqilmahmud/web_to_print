@@ -518,25 +518,30 @@ export const webToPrint = {
 					return can.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
 
 				}
-				function getTextHtml(text) {
-					if (text) {
-						var html = $('<div/>', {
-							'text': text.text,
-							css: {
-								'font-weight': text.fontWeight,
-								'font-style': text.fontStyle,
-								'font-family': text.fontFamily,
-								'text-decoration': text.linethrough ? 'line-through' : 'none',
-								'color': text.fill
+				
+				function getTextHtml(texts) {
+					if (Array.isArray(texts)) {
+						return texts.map(text => {
+							if (text) {
+								var html = $('<div/>', {
+									'text': text.text,
+									css: {
+										'font-weight': text.fontWeight,
+										'font-style': text.fontStyle,
+										'font-family': text.fontFamily,
+										'text-decoration': text.linethrough ? 'line-through' : 'none',
+										'color': text.fill
+									}
+								});
+								if (text.underline) {
+									$(html).wrapInner('<u></u>');
+								}
+								return html[0].outerHTML;
 							}
-
-						})
-						if (text.underline) {
-							$(html).wrapInner('<u></u>');
-						}
-						return html[0].outerHTML;
+							return null;
+						}).join('');
 					}
-					else return null
+					return null;
 				}
 
 				function getAllDesign() {
