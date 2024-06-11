@@ -294,7 +294,7 @@
                                                 <h5 class="mb-0">
                                                     <button style="color:black;" class="text-left btn btn-block btn-link collapsed font-weight-bold" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                                                         <img class="mr8" src="/web_to_print/static/img/athlete.png" alt=""/>
-                                                            Team Members<i style="font-size:large;" class="mt4 fa fa-caret-down pull-right"></i>
+                                                        Team Members<i style="font-size:large;" class="mt4 fa fa-caret-down pull-right"></i>
                                                     </button>
                                                     <p style="float: right; margin-top: 10px; margin-bottom: 0;"></p>
                                                 </h5>
@@ -302,7 +302,7 @@
                                             <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-bs-parent="#accordion">
                                                 <div class="card-body">
                                                     <div class="row">
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-12">
                                                             <input type="number" id="num-rows-input" placeholder="Enter the number of players" min="1" class="form-control mb-2"/>
                                                             <button type="button" id="generate-players-btn" class="btn btn-primary mb-2">Generate Players</button>
                                                             <div id="dynamic-rows-container"></div>

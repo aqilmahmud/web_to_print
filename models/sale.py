@@ -88,7 +88,6 @@ class SaleOrder(models.Model):
         if request.context.get('web_to_print'):
             line = self.env['sale.order.line'].browse(res['line_id'])
             content = request.context.get('design_content')
-            print("==============> Frontend contents are here:", content)
             extra_charge = 0
             if content:
                 for obj in content:

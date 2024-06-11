@@ -142,65 +142,64 @@ export const webToPrint = {
 					}
 				}
 
-
 				function objectResize(ev) {
 					let { id } = getActiveCanvas();
 					var obj = ev.target ? ev.target : ev;
-				
+
 					if (obj.type === 'text') {
 						const maxTextWidth = obj.canvas.width * 0.95;
 						const maxTextHeight = obj.canvas.height * 0.95;
 						const currentTextWidth = obj.getScaledWidth();
 						const currentTextHeight = obj.getScaledHeight();
-				
+
 						obj.set('top', resize_ratio[`object_top${id}`] * obj.canvas.height);
 						obj.set('left', resize_ratio[`object_left${id}`] * obj.canvas.width);
-				
+
 						if (currentTextWidth >= maxTextWidth) {
 							const newScaleX = maxTextWidth / obj.getScaledWidth() * obj.scaleX;
 							obj.set('scaleX', newScaleX);
 						}
-				
+
 						if (currentTextHeight >= maxTextHeight) {
 							const newScaleY = maxTextHeight / obj.getScaledHeight() * obj.scaleY;
 							obj.set('scaleY', newScaleY);
 						}
 					}
-				
+
 					if (obj.type === 'image') {
 						const maxImageWidth = obj.canvas.width * 0.90;
 						const maxImageHeight = obj.canvas.height * 0.90;
 						const currentImageWidth = obj.getScaledWidth();
 						const currentImageHeight = obj.getScaledHeight();
-				
+
 						obj.set('top', resize_ratio[`object_top_img${id}`] * obj.canvas.height);
 						obj.set('left', resize_ratio[`object_left_img${id}`] * obj.canvas.width);
-				
+
 						if (currentImageWidth >= maxImageWidth) {
 							const newScaleX = maxImageWidth / obj.getScaledWidth() * obj.scaleX;
 							obj.set('scaleX', newScaleX);
 						}
-				
+
 						if (currentImageHeight >= maxImageHeight) {
 							const newScaleY = maxImageHeight / obj.getScaledHeight() * obj.scaleY;
 							obj.set('scaleY', newScaleY);
 						}
 					}
 				}
-				
+
 				function getActiveCanvas() {
 					var node = $('.wk_canvas.tab-pane.active');
 					var id = node.data('area-id');
 					var canvas = canvas_drawing_objects[`obj_drawing_${id}`];
 					var drawingarea = node.find('.drawingArea');
-				
+
 					if (!(`width-${id}` in resize_ratio) && !(`height-${id}` in resize_ratio) && !(`top-${id}` in resize_ratio) && !(`left-${id}` in resize_ratio)) {
 						resize_ratio[`width-${id}`] = canvas.getWidth();
 						resize_ratio[`height-${id}`] = canvas.getHeight();
 						resize_ratio[`top-${id}`] = drawingarea.css('top');
 						resize_ratio[`left-${id}`] = drawingarea.css('left');
 					}
-				
+
 					return {
 						canvas: canvas_drawing_objects[`obj_drawing_${id}`],
 						id,
@@ -209,40 +208,11 @@ export const webToPrint = {
 					};
 				}
 
-				$('#generate-players-btn').click(function () {
-					var numRows = parseInt($('#num-rows-input').val());
-					var dynamicRowsContainer = $('#dynamic-rows-container');
-				
-					dynamicRowsContainer.empty(); // Clear previous rows
-				
-					for (var i = 0; i < numRows; i++) {
-						var row = $('<div class="row"></div>');
-				
-						var nameInputColumn = $('<div class="col-md-4 mb-2"></div>');
-						var jerseyInputColumn = $('<div class="col-md-4 mb-2"></div>');
-						var sizeInputColumn = $('<div class="col-md-4 mb-2"></div>');
-				
-						var nameInput = $('<input type="text" class="form-control" placeholder="Enter name" name="name[]">');
-						var jerseyInput = $('<input type="number" class="form-control" placeholder="Enter jersey number" name="jersey_number[]">');
-						var sizeSelect = $('<select class="form-control" name="size[]"><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option></select>');
-				
-						nameInputColumn.append(nameInput);
-						jerseyInputColumn.append(jerseyInput);
-						sizeInputColumn.append(sizeSelect);
-				
-						row.append(nameInputColumn);
-						row.append(jerseyInputColumn);
-						row.append(sizeInputColumn);
-				
-						dynamicRowsContainer.append(row);
-					}
-				});
-				
 				$('.add-text').click(function (ev) {
 					let { canvas, id, node, drawingarea } = getActiveCanvas();
 					var textInput = $(ev.currentTarget).prev('.text-string');
 					var text = textInput.val();
-				
+
 					var newText = new fabric.Text(text, {
 						left: fabric.util.getRandomInt(0, drawingarea.width()),
 						top: fabric.util.getRandomInt(0, drawingarea.height()),
@@ -254,7 +224,7 @@ export const webToPrint = {
 						fontWeight: '',
 						hasRotatingPoint: true
 					});
-				
+
 					canvas.add(newText);
 					resize_ratio[`object_scaleX${id}`] = newText.scaleX;
 					resize_ratio[`object_scaleY${id}`] = newText.scaleY;
@@ -266,16 +236,16 @@ export const webToPrint = {
 					resize_ratio[`object_top${id}`] = cords['y'] / newText.canvas.height;
 					resize_ratio[`object_left${id}`] = cords['x'] / newText.canvas.width;
 					canvas.item(canvas.item.length - 1).hasRotatingPoint = true;
-				
+
 					if (!canvas_texts[`obj_text${id}`]) {
 						canvas_texts[`obj_text${id}`] = [];
 					}
 					canvas_texts[`obj_text${id}`].push(newText);
-				
+
 					// Clear the text input field after adding the text
 					textInput.val('');
 				});
-				
+
 				$('.text-string').keydown(debounce(ev => {
 					let { canvas, id, node } = getActiveCanvas();
 					var activeObject = canvas.getActiveObject();
@@ -285,18 +255,35 @@ export const webToPrint = {
 						canvas.renderAll();
 					}
 				}, 300));
-				
-				// Populate the text input field with the selected text object content
-				$(document).on('mouse:down', function (ev) {
+
+				// Update the textarea when a text object is selected
+				function updateTextInputOnSelection() {
 					let { canvas, id, node } = getActiveCanvas();
-					var activeObject = canvas.getActiveObject();
-					if (activeObject && activeObject.type === 'text') {
-						$('.text-string').val(activeObject.text);
-					} else {
+
+					canvas.on('selection:created', function (ev) {
+						var activeObject = ev.selected[0];
+						if (activeObject && activeObject.type === 'text') {
+							$('.text-string').val(activeObject.text);
+						}
+					});
+
+					canvas.on('selection:updated', function (ev) {
+						var activeObject = ev.selected[0];
+						if (activeObject && activeObject.type === 'text') {
+							$('.text-string').val(activeObject.text);
+						}
+					});
+
+					canvas.on('selection:cleared', function () {
 						$('.text-string').val('');
-					}
+					});
+				}
+
+				$(document).ready(function () {
+					let { canvas, id, node } = getActiveCanvas();
+					updateTextInputOnSelection(canvas);
 				});
-				
+
 				$(document).on('click', '.rm-text', ev => {
 					let { canvas, id, node, drawingarea } = getActiveCanvas();
 					var activeObject = canvas.getActiveObject();
@@ -455,14 +442,6 @@ export const webToPrint = {
 					}
 				});
 
-				// $(document).on('click', '.rm-text', ev => {
-				// 	let { canvas, id, node, drawingarea } = getActiveCanvas();
-				// 	if (canvas_texts[`obj_text${id}`]) {
-				// 		canvas.remove(canvas_texts[`obj_text${id}`]);
-				// 		canvas_texts[`obj_text${id}`] = null;
-				// 	}
-				// });
-
 				$(document).on('click', '.rm-img', ev => {
 					let { canvas, id, node, drawingarea } = getActiveCanvas();
 					if (canvas_imgs[`obj_img${id}`]) {
@@ -478,6 +457,40 @@ export const webToPrint = {
 					$(ev.currentTarget).closest('.row').prev('.row').find('.col-7 img').attr('src', ev.currentTarget.src);
 				});
 
+				$('#generate-players-btn').click(function () {
+					var numRows = parseInt($('#num-rows-input').val());
+					var dynamicRowsContainer = $('#dynamic-rows-container');
+				
+					dynamicRowsContainer.empty(); // Clear previous rows
+				
+					for (var i = 0; i < numRows; i++) {
+						var row = $('<div class="row mb-2"></div>'); // Added mb-2 for spacing between rows
+				
+						var nameInputColumn = $('<div class="col-md-4"></div>');
+						var jerseyInputColumn = $('<div class="col-md-4"></div>');
+						var sizeInputColumn = $('<div class="col-md-4 d-flex align-items-center"></div>'); // Added d-flex and align-items-center classes
+				
+						var nameInput = $('<input type="text" class="form-control" placeholder="Player name" name="name[]">');
+						var jerseyInput = $('<input type="number" class="form-control" placeholder="Jersey number" name="jersey_number[]">');
+				
+						// Create a label and select element for size
+						var sizeLabel = $('<label for="size' + i + '" class="mr-2">Size:  </label>'); // Added class mr-2 for margin-right
+						var sizeSelect = $('<select class="form-control" id="size' + i + '" name="size[]"><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option></select>');
+				
+						nameInputColumn.append(nameInput);
+						jerseyInputColumn.append(jerseyInput);
+				
+						// Append the label and select element to the sizeInputColumn
+						sizeInputColumn.append(sizeLabel);
+						sizeInputColumn.append(sizeSelect);
+				
+						row.append(nameInputColumn);
+						row.append(jerseyInputColumn);
+						row.append(sizeInputColumn);
+				
+						dynamicRowsContainer.append(row);
+					}
+				});
 
 				$('#reset-design').click(function (ev) {
 					let { canvas, id, node } = getActiveCanvas();
