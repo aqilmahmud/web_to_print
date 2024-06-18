@@ -63,6 +63,7 @@ class DesignLine(models.Model):
     image_name = fields.Char()
     text_charge = fields.Float(string='Text Charge', default=0.0)
     image_charge = fields.Float(string='Image Charge', default=0.0)
+    player_list = fields.Html(string='')
 
     def action_download_design(self):
         self.ensure_one()

@@ -10,6 +10,7 @@
                 <div class="page">
                 <span t-if="doc.text" t-esc="doc.text" t-options="{'widget':'html'}"></span>
                 <img t-if="doc.image" t-att-src="image_data_uri(doc.image)" alt=""/>
+                <span t-if="doc.player_list" t-esc="doc.player_list" t-options="{'widget':'html'}"></span>
                 </div>
             </t>
         </t>

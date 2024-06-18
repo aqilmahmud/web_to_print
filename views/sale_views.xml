@@ -60,6 +60,7 @@
                 <field name="image_name" column_invisible="1" />
                 <field name="image" widget="download" filename="image_name" string="Image" />
                 <field name="text" widget="html" />
+                <field name="player_list" widget="html" />
                 <button   string="Download preview"   name="action_download_design" type="object" class="oe_highlight" />
                 <button  string="Download content"  name="action_report_design_content" type="object" class="oe_highlight"/>
             </tree>
@@ -89,6 +90,9 @@
                         <div  string="Design Content">
                             <group string="Text" invisible="text == False">
                                 <field name="text"  />
+                            </group>
+                            <group string="Player List" invisible="player_list == False">
+                                <field name="player_list"  />
                             </group>
                             <newline/>
                             

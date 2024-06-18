@@ -109,8 +109,7 @@
                                                 </span>
                                             </div>
                                             <a role="button" id="buy_now" t-att-class="'%s btn btn-primary mt16 js_check_product a-submit d-block d-sm-inline-block'%('disabled' if wtp_tnc else '')" href="#">
-                                                <i class="fa fa-shopping-cart"/>
- Add to Cart</a>
+                                                <i class="fa fa-shopping-cart"/>Add to Cart</a>
                                             <div id="product_option_block"/>
                                         </div>
                                     </form>
@@ -306,8 +305,6 @@
                                                         <div class="col-md-12">
                                                             <input type="number" id="num-rows-input" placeholder="Enter the number of players" min="1" class="form-control mb-2"/>
                                                             <button type="button" id="generate-players-btn" class="btn btn-primary mb-2">Generate Players</button>
-                                                            <!-- Added Save Players button -->
-                                                            <button type="button" id="save-players-btn" class="btn btn-success mb-2">Save Players</button>
                                                             <div id="dynamic-rows-container"></div>
                                                         </div>
                                                     </div>
@@ -321,7 +318,7 @@
                         <div id="cautionfileAlert" class="float-end postion-absulate mt-1 toast text-white bg-danger border-0" role="alert" data-delay="3000">
                                 <div class="d-flex">
                                     <div class="toast-body">
-      Only image type files are allowed.
+                                        Only image type files are allowed.
                                     </div>
                                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                                 </div>

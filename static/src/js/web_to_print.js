@@ -495,22 +495,46 @@ export const webToPrint = {
 					}
 				});
 
-				// Click event handler for the "Save Players" button
-				$('#save-players-btn').click(function () {
-					playerList = []; // Clear the existing player list
-					
-					// Iterate over each row to extract player data
-					$('#dynamic-rows-container .row').each(function () {
-						var playerName = $(this).find('input[name="name[]"]').val();
-						var jerseyNumber = $(this).find('input[name="jersey_number[]"]').val();
-						var playerSize = $(this).find('select[name="size[]"]').val();
-						
-						// Add the player data to the playerList array
-						playerList.push({ name: playerName, jerseyNumber: jerseyNumber, size: playerSize });
-					});
-					
-					console.log("================>", playerList); // Output the list of players to the console
-				});
+				function getPlayerListHtml(players) {
+					if (Array.isArray(players) && players.length > 0) {
+						// Create the table element
+						var table = $('<table/>', {
+							'class': 'player-table table table-striped'
+						});
+				
+						// Create the table header
+						var thead = $('<thead/>').append(
+							$('<tr/>').append(
+								$('<th/>', { 'text': 'Name' }),
+								$('<th/>', { 'text': 'Jersey Number' }),
+								$('<th/>', { 'text': 'Size' })
+							)
+						);
+				
+						// Create the table body
+						var tbody = $('<tbody/>');
+				
+						// Add a row for each player
+						players.forEach(player => {
+							if (player) {
+								var row = $('<tr/>').append(
+									$('<td/>', { 'text': player.name }),
+									$('<td/>', { 'text': player.jerseyNumber }),
+									$('<td/>', { 'text': player.size })
+								);
+								tbody.append(row);
+							}
+						});
+				
+						// Append the header and body to the table
+						table.append(thead);
+						table.append(tbody);
+				
+						// Return the table's outer HTML
+						return table[0].outerHTML;
+					}
+					return null;
+				}
 
 				$('#reset-design').click(function (ev) {
 					let { canvas, id, node } = getActiveCanvas();
@@ -519,7 +543,10 @@ export const webToPrint = {
 					$(`#add-to-cart-modal input[name="web_to_print_area_${id}_image_name"]`).val('False');
 					canvas.clear();
 					$('.img-name').html('');
-
+				
+					// Clear the player list from the view
+					playerList = []; // Clear the existing player list
+					$('#dynamic-rows-container').empty(); // Remove the player list rows from the view
 				});
 
 				$('.nav-link.wk-img').click(ev => {
@@ -608,7 +635,7 @@ export const webToPrint = {
 							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_design"]`).val(can.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream"));
 							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_text"]`).val(canvas_texts[`obj_text${id}`] ? getTextHtml(canvas_texts[`obj_text${id}`]) : 'False');
 							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_image"]`).val(canvas_imgs[`obj_img${id}`] ? canvas_imgs[`obj_img${id}`].getSrc() : 'False')
-							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_players"]`).val(JSON.stringify(playerList));
+							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_players"]`).val(getPlayerListHtml(playerList));
 							var img = new Image();
 							img.src = can.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
 							img.className = 'border mt8 mr8 ml8 cart-small-img';
@@ -621,8 +648,26 @@ export const webToPrint = {
 					return hasDesign;
 				}
 
-				$('#save-design').click(ev => {
+				$('#save-design').click(function (ev) {
+					// Show loader
 					$('.wk_loader').show();
+					
+					// Clear the existing player list
+					playerList = [];
+					
+					// Iterate over each row to extract player data
+					$('#dynamic-rows-container .row').each(function () {
+						var playerName = $(this).find('input[name="name[]"]').val();
+						var jerseyNumber = $(this).find('input[name="jersey_number[]"]').val();
+						var playerSize = $(this).find('select[name="size[]"]').val();
+						
+						// Add the player data to the playerList array
+						playerList.push({ name: playerName, jerseyNumber: jerseyNumber, size: playerSize });
+					});
+					
+					console.log("================>", playerList); // Output the list of players to the console
+					
+					// Proceed with design save logic
 					$('#add-to-cart-modal .col-md-6 .col-5').last().empty();
 					var hasDesign = getAllDesign();
 					if (!hasDesign) {
@@ -632,12 +677,14 @@ export const webToPrint = {
 						$('#add-to-cart-modal').modal('hide');
 						return;
 					}
+					
 					var img = new Image();
 					img.src = $('.cart-small-img').first().attr('src');
 					img.className = 'img-thumbnail';
 					$('#add-to-cart-modal .col-md-6 .col-7').first().empty();
 					$('#add-to-cart-modal .col-md-6 .col-7').first().append(img);
-					// $('.cart-small-img').length == 1 ? $('.cart-small-img').remove() : '';
+					
+					// Hide loader
 					$('.wk_loader').hide();
 				});
 

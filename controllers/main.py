@@ -56,6 +56,8 @@ class WebsiteSale(WebsiteSale):
                         design_content['image'] = kwargs.get(image_key).split(',')[1]
                         design_content['image_name'] = kwargs.get('web_to_print_area_%s_image_name' % area.id)
                         design_content['image_charge'] = area.image_charge
+                    if kwargs.get(players_key) and kwargs.get(players_key) != 'False':
+                        design_content['player_list'] = kwargs.get(players_key)
                     content.append((0, 0, design_content))
 
                     # Print players here
