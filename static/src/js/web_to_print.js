@@ -457,39 +457,59 @@ export const webToPrint = {
 					$(ev.currentTarget).closest('.row').prev('.row').find('.col-7 img').attr('src', ev.currentTarget.src);
 				});
 
+				var playerList = [];
+
+				// Click event handler for the "Generate Players" button
 				$('#generate-players-btn').click(function () {
 					var numRows = parseInt($('#num-rows-input').val());
 					var dynamicRowsContainer = $('#dynamic-rows-container');
-				
+					
 					dynamicRowsContainer.empty(); // Clear previous rows
-				
+					
 					for (var i = 0; i < numRows; i++) {
 						var row = $('<div class="row mb-2"></div>'); // Added mb-2 for spacing between rows
-				
+						
 						var nameInputColumn = $('<div class="col-md-4"></div>');
 						var jerseyInputColumn = $('<div class="col-md-4"></div>');
 						var sizeInputColumn = $('<div class="col-md-4 d-flex align-items-center"></div>'); // Added d-flex and align-items-center classes
-				
+						
 						var nameInput = $('<input type="text" class="form-control" placeholder="Player name" name="name[]">');
 						var jerseyInput = $('<input type="number" class="form-control" placeholder="Jersey number" name="jersey_number[]">');
-				
+						
 						// Create a label and select element for size
 						var sizeLabel = $('<label for="size' + i + '" class="mr-2">Size:  </label>'); // Added class mr-2 for margin-right
 						var sizeSelect = $('<select class="form-control" id="size' + i + '" name="size[]"><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option></select>');
-				
+						
 						nameInputColumn.append(nameInput);
 						jerseyInputColumn.append(jerseyInput);
-				
+						
 						// Append the label and select element to the sizeInputColumn
 						sizeInputColumn.append(sizeLabel);
 						sizeInputColumn.append(sizeSelect);
-				
+						
 						row.append(nameInputColumn);
 						row.append(jerseyInputColumn);
 						row.append(sizeInputColumn);
-				
+						
 						dynamicRowsContainer.append(row);
 					}
+				});
+
+				// Click event handler for the "Save Players" button
+				$('#save-players-btn').click(function () {
+					playerList = []; // Clear the existing player list
+					
+					// Iterate over each row to extract player data
+					$('#dynamic-rows-container .row').each(function () {
+						var playerName = $(this).find('input[name="name[]"]').val();
+						var jerseyNumber = $(this).find('input[name="jersey_number[]"]').val();
+						var playerSize = $(this).find('select[name="size[]"]').val();
+						
+						// Add the player data to the playerList array
+						playerList.push({ name: playerName, jerseyNumber: jerseyNumber, size: playerSize });
+					});
+					
+					console.log("================>", playerList); // Output the list of players to the console
 				});
 
 				$('#reset-design').click(function (ev) {
@@ -588,6 +608,7 @@ export const webToPrint = {
 							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_design"]`).val(can.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream"));
 							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_text"]`).val(canvas_texts[`obj_text${id}`] ? getTextHtml(canvas_texts[`obj_text${id}`]) : 'False');
 							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_image"]`).val(canvas_imgs[`obj_img${id}`] ? canvas_imgs[`obj_img${id}`].getSrc() : 'False')
+							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_players"]`).val(JSON.stringify(playerList));
 							var img = new Image();
 							img.src = can.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
 							img.className = 'border mt8 mr8 ml8 cart-small-img';

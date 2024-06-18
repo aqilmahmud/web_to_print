@@ -42,6 +42,8 @@ class WebsiteSale(WebsiteSale):
                 design_key = 'web_to_print_area_%s_design' % area.id
                 text_key = 'web_to_print_area_%s_text' % area.id
                 image_key = 'web_to_print_area_%s_image' % area.id
+                players_key = 'web_to_print_area_%s_players' % area.id
+                print(players_key)
                 if kwargs.get(design_key) != '':
                     design_content = {
                         'design': kwargs.get(design_key).split(',')[1],
@@ -56,6 +58,10 @@ class WebsiteSale(WebsiteSale):
                         design_content['image_charge'] = area.image_charge
                     content.append((0, 0, design_content))
 
+                    # Print players here
+                    players = kwargs.get(players_key)
+                    print("=====================>Players:", players)
+
             ctx.update(design_content=content, web_to_print=True)
             request.update_context(**ctx)
 
@@ -65,4 +71,5 @@ class WebsiteSale(WebsiteSale):
             return request.redirect('/shop/cart')
 
         return res
+
 

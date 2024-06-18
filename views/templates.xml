@@ -75,6 +75,7 @@
                                                     <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_text"/>
                                                     <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_image"/>
                                                     <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_image_name"/>
+                                                    <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_players"/>
                                                 </t>
 
                                             </t>
@@ -305,6 +306,8 @@
                                                         <div class="col-md-12">
                                                             <input type="number" id="num-rows-input" placeholder="Enter the number of players" min="1" class="form-control mb-2"/>
                                                             <button type="button" id="generate-players-btn" class="btn btn-primary mb-2">Generate Players</button>
+                                                            <!-- Added Save Players button -->
+                                                            <button type="button" id="save-players-btn" class="btn btn-success mb-2">Save Players</button>
                                                             <div id="dynamic-rows-container"></div>
                                                         </div>
                                                     </div>
