@@ -478,7 +478,7 @@ export const webToPrint = {
 						
 						// Create a label and select element for size
 						var sizeLabel = $('<label for="size' + i + '" class="mr-2">Size:  </label>'); // Added class mr-2 for margin-right
-						var sizeSelect = $('<select class="form-control" id="size' + i + '" name="size[]"><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option></select>');
+						var sizeSelect = $('<select class="form-control" id="size' + i + '" name="size[]"><option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXl</option><option value="XXXL">XXXL</option></select>');
 						
 						nameInputColumn.append(nameInput);
 						jerseyInputColumn.append(jerseyInput);
@@ -664,8 +664,6 @@ export const webToPrint = {
 						// Add the player data to the playerList array
 						playerList.push({ name: playerName, jerseyNumber: jerseyNumber, size: playerSize });
 					});
-					
-					console.log("================>", playerList); // Output the list of players to the console
 					
 					// Proceed with design save logic
 					$('#add-to-cart-modal .col-md-6 .col-5').last().empty();

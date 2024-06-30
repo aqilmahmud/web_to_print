@@ -6,6 +6,7 @@
 ##############################################################################
 
 import logging
+import re
 
 from odoo import _, api, fields, models
 from odoo.http import request
@@ -90,17 +91,71 @@ class SaleOrder(models.Model):
             line = self.env['sale.order.line'].browse(res['line_id'])
             content = request.context.get('design_content')
             extra_charge = 0
+            size_count = {}
             if content:
                 for obj in content:
                     dictionary = obj[2]  # Access the dictionary directly at index 2
                     text_charge = dictionary.get('text_charge', 0)
                     image_charge = dictionary.get('image_charge', 0)
                     extra_charge += text_charge + image_charge
+                for obj in content:
+                    dictionary = obj[2]  # Access the dictionary directly at index 2
+                    player_list = dictionary.get('player_list', None)
+                    if player_list:
+                        sizes = re.findall(r'<td>(XS|S|M|L|XL|XXL|XXXL)</td>', player_list)
+                        # Count the occurrences of each size
+                        for size in sizes:
+                            if size in size_count:
+                                size_count[size] += 1
+                            else:
+                                size_count[size] = 1
+                                
+            products = self.env['product.product'].search([
+                ('id', '=', line.product_id.id)
+            ])
+
+            other_variants = []
+            
+            for new_obj in products.product_template_variant_value_ids:
+                if new_obj.name in ('XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'):
+                    continue
+                else:
+                    other_variants.append(new_obj.id)
+
+            products = self.env['product.product'].search([
+                ('name', '=', line.product_template_id.name)
+            ])
+            filtered_products = []
+            for p in products:
+                variant_ids = p.product_template_variant_value_ids.ids
+                if self.is_subsequence(other_variants, variant_ids):
+                    filtered_products.append(p)
+
             if line:
-                line.write({
-                    'web_to_print_line': True,
-                    'design_line_ids': content,
-                    'extra_customization_charge': extra_charge
-                })
+                if size_count:
+                    line.unlink()
+                    for size, count in size_count.items():
+                        if products:
+                            for obj in filtered_products:
+                                for var in obj.product_template_variant_value_ids:
+                                    if size == var.name:
+                                        line.create({
+                                            'order_id': self.id,
+                                            'web_to_print_line': True,
+                                            'design_line_ids': content,
+                                            'extra_customization_charge': extra_charge,
+                                            'product_uom_qty': count,
+                                            'product_id': obj.id
+                                        })
+                else:
+                    line.write({
+                        'web_to_print_line': True,
+                        'design_line_ids': content,
+                        'extra_customization_charge': extra_charge
+                    })
         return res
+    
+    def is_subsequence(self, sub, main):
+        it = iter(main)
+        return all(any(item == elem for elem in it) for item in sub)
     

@@ -43,7 +43,6 @@ class WebsiteSale(WebsiteSale):
                 text_key = 'web_to_print_area_%s_text' % area.id
                 image_key = 'web_to_print_area_%s_image' % area.id
                 players_key = 'web_to_print_area_%s_players' % area.id
-                print(players_key)
                 if kwargs.get(design_key) != '':
                     design_content = {
                         'design': kwargs.get(design_key).split(',')[1],
@@ -56,13 +55,9 @@ class WebsiteSale(WebsiteSale):
                         design_content['image'] = kwargs.get(image_key).split(',')[1]
                         design_content['image_name'] = kwargs.get('web_to_print_area_%s_image_name' % area.id)
                         design_content['image_charge'] = area.image_charge
-                    if kwargs.get(players_key) and kwargs.get(players_key) != 'False':
+                    if kwargs.get(players_key) and kwargs.get(players_key) != 'False' and area.provide_team_members:
                         design_content['player_list'] = kwargs.get(players_key)
                     content.append((0, 0, design_content))
-
-                    # Print players here
-                    players = kwargs.get(players_key)
-                    print("=====================>Players:", players)
 
             ctx.update(design_content=content, web_to_print=True)
             request.update_context(**ctx)
