@@ -92,6 +92,7 @@ class SaleOrder(models.Model):
             content = request.context.get('design_content')
             extra_charge = 0
             size_count = {}
+            available_sizes = []
             if content:
                 for obj in content:
                     dictionary = obj[2]  # Access the dictionary directly at index 2
@@ -102,7 +103,21 @@ class SaleOrder(models.Model):
                     dictionary = obj[2]  # Access the dictionary directly at index 2
                     player_list = dictionary.get('player_list', None)
                     if player_list:
-                        sizes = re.findall(r'<td>(XS|S|M|L|XL|XXL|XXXL)</td>', player_list)
+                        product_template = self.env['product.template'].search([
+                                ('name', '=', line.product_id.name)
+                            ])
+                        if product_template:
+                            for variant in product_template.product_variant_ids:
+                                for val in variant.product_template_attribute_value_ids:
+                                    if val.attribute_id.is_size_attribute_for_customizable_products:
+                                        if val.name not in available_sizes:
+                                            available_sizes.append(val.name)
+
+                        # Create a regex pattern from available_sizes
+                        sizes_pattern = r'<td>({})</td>'.format('|'.join(available_sizes))
+
+                        # Use the dynamically created pattern in re.findall
+                        sizes = re.findall(sizes_pattern, player_list)
                         # Count the occurrences of each size
                         for size in sizes:
                             if size in size_count:
@@ -116,11 +131,12 @@ class SaleOrder(models.Model):
 
             other_variants = []
             
-            for new_obj in products.product_template_variant_value_ids:
-                if new_obj.name in ('XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'):
-                    continue
-                else:
-                    other_variants.append(new_obj.id)
+            if available_sizes:
+                for new_obj in products.product_template_variant_value_ids:
+                    if new_obj.name in available_sizes:
+                        continue
+                    else:
+                        other_variants.append(new_obj.id)
 
             products = self.env['product.product'].search([
                 ('name', '=', line.product_template_id.name)

@@ -304,7 +304,7 @@
                                                     <div class="row">
                                                         <div class="col-md-12">
                                                             <input type="number" id="num-rows-input" placeholder="Enter the number of players" min="1" class="form-control mb-2"/>
-                                                            <button type="button" id="generate-players-btn" class="btn btn-primary mb-2">Generate Players</button>
+                                                            <button type="button" id="generate-players-btn" class="btn btn-primary mb-2" t-att-data-product-json="product.to_json()">Generate Players</button>
                                                             <div id="dynamic-rows-container"></div>
                                                         </div>
                                                     </div>

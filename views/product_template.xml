@@ -93,6 +93,17 @@
             <field name="domain">[('is_web_to_print','=',True)]</field>
             <field name="context">{'default_is_web_to_print':True}</field>
         </record>
+
+        <record id="product_attribute_form_view_web_to_print" model="ir.ui.view">
+            <field name="name">product.attribute.view.form.inherit</field>
+            <field name="model">product.attribute</field>
+            <field name="inherit_id" ref="product.product_attribute_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='visibility']" position="after">
+                    <field name="is_size_attribute_for_customizable_products"/>
+                </xpath>
+            </field>
+        </record>
         
         <menuitem
             id="web_to_print_product_template_menu"

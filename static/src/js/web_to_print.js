@@ -463,6 +463,9 @@ export const webToPrint = {
 				$('#generate-players-btn').click(function () {
 					var numRows = parseInt($('#num-rows-input').val());
 					var dynamicRowsContainer = $('#dynamic-rows-container');
+
+					var productSizeJson = $(this).data('product-json'); // Retrieve the product size JSON from the data attribute
+					var availableSizes = productSizeJson.available_sizes;
 					
 					dynamicRowsContainer.empty(); // Clear previous rows
 					
@@ -478,8 +481,13 @@ export const webToPrint = {
 						
 						// Create a label and select element for size
 						var sizeLabel = $('<label for="size' + i + '" class="mr-2">Size:  </label>'); // Added class mr-2 for margin-right
-						var sizeSelect = $('<select class="form-control" id="size' + i + '" name="size[]"><option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXl</option><option value="XXXL">XXXL</option></select>');
+						var sizeSelect = $('<select class="form-control" id="size' + i + '" name="size[]"></select>');
 						
+						// Dynamically populate the sizeSelect with availableSizes
+						availableSizes.forEach(function(size) {
+							sizeSelect.append($('<option></option>').attr('value', size).text(size));
+						});
+
 						nameInputColumn.append(nameInput);
 						jerseyInputColumn.append(jerseyInput);
 						

@@ -4,7 +4,7 @@
 # See LICENSE file for full copyright and licensing details.
 # License URL : <https://store.webkul.com/license.html/>
 ##############################################################################
-import logging
+import logging, json
 import base64
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -110,3 +110,30 @@ class ProductDimension(models.Model):
                 'top':157,
                 'left':71
             }
+
+class ProductProduct(models.Model):
+
+    _inherit = 'product.product'
+
+    def to_json(self):
+        product_template = self.env['product.template'].search([
+                ('name', '=', self.name)
+            ])
+        available_sizes = []
+        if product_template:
+            for variant in product_template.product_variant_ids:
+                for val in variant.product_template_attribute_value_ids:
+                    if val.attribute_id.is_size_attribute_for_customizable_products:
+                        if val.name in available_sizes:
+                            continue
+                        else:
+                            available_sizes.append(val.name)
+        return json.dumps({
+            'available_sizes': available_sizes,
+        })
+    
+class ProductAttribute(models.Model):
+
+    _inherit = 'product.attribute'
+    
+    is_size_attribute_for_customizable_products = fields.Boolean(string="Size Attribute for Customizable Products")
