@@ -59,6 +59,7 @@ class ProductDimension(models.Model):
     provide_image = fields.Boolean(string='Provide Image', default=True)
     provide_text = fields.Boolean(string='Provide Text', default=True)
     provide_team_members = fields.Boolean(string='Provide Team Members', default=True)
+    is_bulk_ordering = fields.Boolean(string='Bulk Ordering', default=True)
     width = fields.Char()
     height = fields.Char()
     top = fields.Char()

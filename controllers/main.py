@@ -42,6 +42,7 @@ class WebsiteSale(WebsiteSale):
                 design_key = 'web_to_print_area_%s_design' % area.id
                 text_key = 'web_to_print_area_%s_text' % area.id
                 image_key = 'web_to_print_area_%s_image' % area.id
+                bulk_order_key= 'web_to_print_area_%s_bulk' % area.id
                 players_key = 'web_to_print_area_%s_players' % area.id
                 if kwargs.get(design_key) != '':
                     design_content = {
@@ -57,6 +58,8 @@ class WebsiteSale(WebsiteSale):
                         design_content['image_charge'] = area.image_charge
                     if kwargs.get(players_key) and kwargs.get(players_key) != 'False' and area.provide_team_members:
                         design_content['player_list'] = kwargs.get(players_key)
+                    if kwargs.get(bulk_order_key) and kwargs.get(bulk_order_key) != 'False' and area.is_bulk_ordering:
+                        design_content['bulk_order'] = kwargs.get(bulk_order_key)
                     content.append((0, 0, design_content))
 
             ctx.update(design_content=content, web_to_print=True)

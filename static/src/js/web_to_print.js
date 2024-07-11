@@ -544,6 +544,92 @@ export const webToPrint = {
 					return null;
 				}
 
+				var sizeQuantityList = [];
+
+				$(document).ready(function () {
+					var dynamicRowsContainer = $('#dynamic-rows-container1');
+					var productSizeJson = $('#collapseThree').data('product-json'); // Retrieve the product size JSON from the data attribute
+				
+					// Check if productSizeJson is valid
+					if (!productSizeJson || !productSizeJson.available_sizes || !Array.isArray(productSizeJson.available_sizes)) {
+						return;
+					}
+				
+					var availableSizes = productSizeJson.available_sizes;
+					
+					dynamicRowsContainer.empty(); // Clear previous rows
+					
+					// Loop through availableSizes and render each size with quantity inputs
+					availableSizes.forEach(function(size) {
+						// Create a new row container for each size and quantity inputs
+						var row = $('<div class="row size-row mb-2"></div>');
+						
+						// Size text
+						var sizeElement = $('<div class="col-md-4 size-option">' + size + '</div>');
+						
+						// Quantity input group
+						var quantityInputGroup = $('<div class="col-md-8 input-group quantity-input-group"></div>');
+						var prependButton = $('<div class="input-group-prepend pe-1"></div>');
+						var minusButton = $('<a href="#" class="btn btn-secondary js_add_cart_json" aria-label="Remove one" title="Remove one"><i class="fa fa-minus"></i></a>');
+						var inputField = $('<input type="text" class="form-control text-center quantity" data-min="0" name="add_qty" value="0" style="width: 50px;">');
+						var appendButton = $('<div class="input-group-append ps-1"></div>');
+						var plusButton = $('<a href="#" class="btn btn-secondary js_add_cart_json" aria-label="Add one" title="Add one"><i class="fa fa-plus"></i></a>');
+					
+						// Append buttons to input group
+						prependButton.append(minusButton);
+						appendButton.append(plusButton);
+						quantityInputGroup.append(prependButton);
+						quantityInputGroup.append(inputField);
+						quantityInputGroup.append(appendButton);
+						
+						// Append size and quantity inputs to the row
+						row.append(sizeElement);
+						row.append(quantityInputGroup);
+						
+						// Append row to dynamic container
+						dynamicRowsContainer.append(row);
+					});
+				});
+
+				function getBulkOrderHtml(sizeCount) {
+					if (Array.isArray(sizeCount) && sizeCount.length > 0) {
+						// Create the table element
+						var table = $('<table/>', {
+							'class': 'player-table table table-striped'
+						});
+				
+						// Create the table header
+						var thead = $('<thead/>').append(
+							$('<tr/>').append(
+								$('<th/>', { 'text': 'Size' }),
+								$('<th/>', { 'text': 'Count' })
+							)
+						);
+				
+						// Create the table body
+						var tbody = $('<tbody/>');
+				
+						// Add a row for each player
+						sizeCount.forEach(size => {
+							if (size) {
+								var row = $('<tr/>').append(
+									$('<td/>', { 'text': size.size }),
+									$('<td/>', { 'text': size.quantity })
+								);
+								tbody.append(row);
+							}
+						});
+				
+						// Append the header and body to the table
+						table.append(thead);
+						table.append(tbody);
+				
+						// Return the table's outer HTML
+						return table[0].outerHTML;
+					}
+					return null;
+				}
+
 				$('#reset-design').click(function (ev) {
 					let { canvas, id, node } = getActiveCanvas();
 					canvas_texts[`obj_text${id}`] = null;
@@ -644,6 +730,7 @@ export const webToPrint = {
 							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_text"]`).val(canvas_texts[`obj_text${id}`] ? getTextHtml(canvas_texts[`obj_text${id}`]) : 'False');
 							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_image"]`).val(canvas_imgs[`obj_img${id}`] ? canvas_imgs[`obj_img${id}`].getSrc() : 'False')
 							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_players"]`).val(getPlayerListHtml(playerList));
+							$(`#add-to-cart-modal input[name="web_to_print_area_${id}_bulk"]`).val(getBulkOrderHtml(sizeQuantityList));
 							var img = new Image();
 							img.src = can.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
 							img.className = 'border mt8 mr8 ml8 cart-small-img';
@@ -671,6 +758,16 @@ export const webToPrint = {
 						
 						// Add the player data to the playerList array
 						playerList.push({ name: playerName, jerseyNumber: jerseyNumber, size: playerSize });
+					});
+
+					sizeQuantityList = [];
+					
+					$('#dynamic-rows-container1 .size-row').each(function () {
+						var size = $(this).find('.size-option').text();
+						var quantity = $(this).find('input.quantity').val();
+									
+						// Add the size and quantity data to the sizeQuantityList array
+						sizeQuantityList.push({ size: size, quantity: quantity });
 					});
 					
 					// Proceed with design save logic

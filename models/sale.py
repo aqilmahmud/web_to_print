@@ -5,8 +5,8 @@
 # License URL : <https://store.webkul.com/license.html/>
 ##############################################################################
 
-import logging
-import re
+import logging, re
+from collections import Counter
 
 from odoo import _, api, fields, models
 from odoo.http import request
@@ -65,6 +65,7 @@ class DesignLine(models.Model):
     text_charge = fields.Float(string='Text Charge', default=0.0)
     image_charge = fields.Float(string='Image Charge', default=0.0)
     player_list = fields.Html(string='')
+    bulk_order = fields.Html(string='')
 
     def action_download_design(self):
         self.ensure_one()
@@ -92,26 +93,27 @@ class SaleOrder(models.Model):
             content = request.context.get('design_content')
             extra_charge = 0
             size_count = {}
+            bulk_order_sizes = {}
             available_sizes = []
+            product_template = self.env['product.template'].search([
+                    ('name', '=', line.product_id.name)
+                ])
+            if product_template:
+                for variant in product_template.product_variant_ids:
+                    for val in variant.product_template_attribute_value_ids:
+                        if val.attribute_id.is_size_attribute_for_customizable_products:
+                            if val.name not in available_sizes:
+                                available_sizes.append(val.name)
             if content:
                 for obj in content:
                     dictionary = obj[2]  # Access the dictionary directly at index 2
                     text_charge = dictionary.get('text_charge', 0)
                     image_charge = dictionary.get('image_charge', 0)
-                    extra_charge += text_charge + image_charge
-                for obj in content:
-                    dictionary = obj[2]  # Access the dictionary directly at index 2
                     player_list = dictionary.get('player_list', None)
-                    if player_list:
-                        product_template = self.env['product.template'].search([
-                                ('name', '=', line.product_id.name)
-                            ])
-                        if product_template:
-                            for variant in product_template.product_variant_ids:
-                                for val in variant.product_template_attribute_value_ids:
-                                    if val.attribute_id.is_size_attribute_for_customizable_products:
-                                        if val.name not in available_sizes:
-                                            available_sizes.append(val.name)
+                    bulk_order = dictionary.get('bulk_order', None)
+                    extra_charge += text_charge + image_charge
+
+                    if player_list and available_sizes:
 
                         # Create a regex pattern from available_sizes
                         sizes_pattern = r'<td>({})</td>'.format('|'.join(available_sizes))
@@ -124,7 +126,19 @@ class SaleOrder(models.Model):
                                 size_count[size] += 1
                             else:
                                 size_count[size] = 1
-                                
+                    
+                    if bulk_order:
+                        pattern = r'<td>(\w+)</td><td>(\d+)</td>'
+                        matches = re.findall(pattern, bulk_order)
+
+                        # Convert matches to a dictionary
+                        bulk_order_sizes = {size: int(count) for size, count in matches if int(count) > 0}
+
+
+            merged_size_count = {}
+            if bulk_order_sizes or size_count:
+                merged_size_count = dict(Counter(size_count) + Counter(bulk_order_sizes))
+                                                    
             products = self.env['product.product'].search([
                 ('id', '=', line.product_id.id)
             ])
@@ -148,9 +162,9 @@ class SaleOrder(models.Model):
                     filtered_products.append(p)
 
             if line:
-                if size_count:
+                if merged_size_count:
                     line.unlink()
-                    for size, count in size_count.items():
+                    for size, count in merged_size_count.items():
                         if products:
                             for obj in filtered_products:
                                 for var in obj.product_template_variant_value_ids:

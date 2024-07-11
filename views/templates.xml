@@ -76,6 +76,7 @@
                                                     <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_image"/>
                                                     <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_image_name"/>
                                                     <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_players"/>
+                                                    <input type="hidden" t-attf-name="web_to_print_area_{{area.id}}_bulk"/>
                                                 </t>
 
                                             </t>
@@ -290,22 +291,33 @@
                                             </div>
                                         </div>
                                         <div t-if="area.provide_team_members" style="overflow:inherit;" class="card">
-                                            <div class="card-header pt0 pb0" id="headingTwo">
+                                            <div class="card-header pt0 pb0" id="headingFour">
                                                 <h5 class="mb-0">
-                                                    <button style="color:black;" class="text-left btn btn-block btn-link collapsed font-weight-bold" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                    <button style="color:black;" class="text-left btn btn-block btn-link collapsed font-weight-bold" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
                                                         <img class="mr8" src="/web_to_print/static/img/athlete.png" alt=""/>
                                                         Team Members<i style="font-size:large;" class="mt4 fa fa-caret-down pull-right"></i>
                                                     </button>
                                                     <p style="float: right; margin-top: 10px; margin-bottom: 0;"></p>
                                                 </h5>
                                             </div>
-                                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-bs-parent="#accordion">
+                                            <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-bs-parent="#accordion">
                                                 <div class="card-body">
                                                     <div class="row">
                                                         <div class="col-md-12">
                                                             <input type="number" id="num-rows-input" placeholder="Enter the number of players" min="1" class="form-control mb-2"/>
                                                             <button type="button" id="generate-players-btn" class="btn btn-primary mb-2" t-att-data-product-json="product.to_json()">Generate Players</button>
                                                             <div id="dynamic-rows-container"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div t-if="area.is_bulk_ordering" style="overflow:inherit;" class="card">
+                                            <div id="collapseThree" aria-labelledby="headingThree" t-att-data-product-json="product.to_json()" data-bs-parent="#accordion">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div id="dynamic-rows-container1"></div>
                                                         </div>
                                                     </div>
                                                 </div>
