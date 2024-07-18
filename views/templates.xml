@@ -3,21 +3,6 @@
 <!-- See LICENSE file for full copyright and licensing details. -->
 <!-- "License URL : <https://store.webkul.com/license.html/>" -->
 <odoo>
-
-    <!-- <template id="assets_frontend" inherit_id="web.assets_frontend">
-        <xpath expr="//link[last()]" position="after">
-            <link rel="stylesheet" type="text/css" href="/web_to_print/static/src/css/webtoprint.css"/>
-        </xpath>
-        <xpath expr="//script[last()]" position="after">
-            <script type="text/javascript" src="/web_to_print/static/src/js/fabric.min.js"/>
-            <script type="text/javascript" src="/web_to_print/static/src/js/web_to_print.js"/>
-        </xpath>
-    </template>
-    <template id="assets_backend" inherit_id="web.assets_backend">
-       <xpath expr="//script[last()]" position="after">
-            <script type="text/javascript" src="/web_to_print/static/src/js/area_select.js"/>
-        </xpath>
-    </template> -->
     <template id="custom_product" name="Custom Product">
         <t t-set="active_area" t-value="min(product.custom_area_ids.mapped('sequence'))"/>
         <!-- notification sub template -->
@@ -56,7 +41,6 @@
                                 <div class="col-md-6">
                                     <div class="row">
                                         <div class="col col-7 mx-auto"></div>
-                                        <!-- <div class="col col-5 d-flex flex-wrap"></div> -->
                                     </div>
                                     <div class="row">
                                         <div class="col col-5 d-flex justify-content-center mx-auto"></div>
@@ -83,14 +67,14 @@
                                             <h4>
                                                 <span t-field="product.name" />
                                             </h4>
-                                            <h4 class="oe_price_h4 css_editable_mode_hidden">
+                                            <h4 t-if="not product.product_template_attribute_value_ids" class="oe_price_h4 css_editable_mode_hidden">
                                                 <span t-attf-class="text-danger oe_default_price {{'' if combination_info['has_discounted_price'] else 'd-none'}}" style="text-decoration: line-through; white-space: nowrap;" t-esc="product.lst_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}" />
                                                 <b class="oe_price" style="white-space: nowrap;" t-esc="product.lst_price" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
                                                 <span itemprop="price" style="display:none;" t-esc="product.lst_price"/>
                                                 <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
                                             </h4>
                                             <p t-if="True" class="css_not_available_msg alert alert-warning">This combination does not exist.</p>
-                                            <div class="css_quantity input-group" contenteditable="false">
+                                            <div t-if="not product.product_template_attribute_value_ids" class="css_quantity input-group" contenteditable="false">
                                                 <div class="input-group-prepend pe-1">
                                                     <a t-attf-href="#" class="btn btn-secondary js_add_cart_json" aria-label="Remove one" title="Remove one">
                                                         <i class="fa fa-minus"></i>
@@ -147,7 +131,6 @@
                             <t t-foreach="product.custom_area_ids" t-as="area">
                                 <div role="tabpanel" t-att-data-area-id="area.id" t-att-class="'tab-pane wk_canvas active' if area.sequence == active_area else 'tab-pane wk_canvas' " t-attf-id="area_{{area.id}}" style=" position: relative; background-color: rgb(255, 255, 255);">
                                     <span class="img-canvas" t-field="area.web_image" t-options="{'widget':'image'}"></span>
-                                    <!-- <canvas class="" t-att-data-area-id="area.id" t-attf-id="base_img_canvas_{{area.id}}" width="500" height="500" style="-webkit-user-select: none;position:absolute;"></canvas> -->
                                     <div class="border border-dark drawingArea" t-attf-style="position: absolute;top:{{int(float(area.top))}}px;left:{{int(float(area.left))}}px;z-index: 10;width:{{int(float(area.width))}}px;height:{{int(float(area.height))}}px;">
                                         <canvas t-att-data-area-id="area.id" t-attf-id="tcanvas_{{area.id}}" t-att-width="int(float(area.width))" t-att-height="int(float(area.height))" class="hover" style="-webkit-user-select: none;position:absolute;"></canvas>
                                     </div>
@@ -312,17 +295,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div t-if="area.is_bulk_ordering" style="overflow:inherit;" class="card">
-                                            <div id="collapseThree" aria-labelledby="headingThree" t-att-data-product-json="product.to_json()" data-bs-parent="#accordion">
-                                                <div class="card-body">
-                                                    <div class="row">
-                                                        <div class="col-md-12">
-                                                            <div id="dynamic-rows-container1"></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
                             </t>
@@ -341,6 +313,31 @@
                                     <u>Reset</u>
                                 </button>
                             </div>
+                            <div class="tab-content">
+                                <t t-foreach="product.custom_area_ids" t-as="area">
+                                    <div role="tabpanel" t-attf-id="area_{{area.id}}" t-att-class="'tab-pane editor active' if area.sequence == active_area else 'tab-pane editor'">
+                                        <div id="accordion">
+                                            <div t-if="area.is_bulk_ordering" style="overflow:inherit;" class="card">
+                                                <div class="card-header pt0 pb0" id="headingThree">
+                                                    <h5 class="mb-0">
+                                                            <img class="mr8" src="/web_to_print/static/img/bulk_buying.png" alt=""/>
+                                                            Select Quantity
+                                                    </h5>
+                                                </div>
+                                                <div id="collapseThree" aria-labelledby="headingThree" t-att-data-product-json="product.to_json()" data-bs-parent="#accordion">
+                                                    <div class="card-body">
+                                                        <div class="row">
+                                                            <div class="col-md-12">
+                                                                <div id="dynamic-rows-container1"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
                             <div class="float-end mb16">
                                 <button id="preview-design" class="ml16 btn btn-outline-success">Preview</button>
                                 <button id="save-design" data-bs-toggle="modal" data-bs-target="#add-to-cart-modal" class="ml16 btn btn-success">Save and Add to cart</button>
@@ -348,17 +345,6 @@
                             <div style="display:none;" id="add-cart-msg" class="mt16 mb16 alert alert-danger">No customization done</div>
                         </div>
                     </div>
-
-                    <!-- <div class="col-md-1">
-                        <div class="btn-group-vertical">
-                            <button id="design-download" class="btn">
-                                <i class="fa fa-download fa-2x"></i>
-                            </button>
-                            <button id="remove-selected" class="btn">
-                                <i class="fa fa-trash fa-2x"></i>
-                            </button>
-                        </div>
-                    </div> -->
                 </div>
             </section>
 
