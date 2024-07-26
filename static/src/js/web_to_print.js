@@ -457,48 +457,136 @@ export const webToPrint = {
 					$(ev.currentTarget).closest('.row').prev('.row').find('.col-7 img').attr('src', ev.currentTarget.src);
 				});
 
+				var sizeQuantityList = [];
+
 				var playerList = [];
 
-				// Click event handler for the "Generate Players" button
+				$(document).ready(function () {
+					var dynamicRowsContainer = $('#dynamic-rows-container1');
+					var productSizeJson = $('#collapseThree').data('product-json'); // Retrieve the product size JSON from the data attribute
+				
+					// Check if productSizeJson is valid
+					if (!productSizeJson || !productSizeJson.available_sizes || !Array.isArray(productSizeJson.available_sizes)) {
+						return;
+					}
+				
+					var availableSizes = productSizeJson.available_sizes;
+				
+					dynamicRowsContainer.empty(); // Clear previous rows
+				
+					// Loop through availableSizes and render each size with quantity inputs
+					availableSizes.forEach(function (size) {
+						// Create a new row container for each size and quantity inputs
+						var row = $('<div class="row size-row mb-2"></div>');
+				
+						// Size text
+						var sizeElement = $('<div class="col-md-4 size-option">' + size + '</div>');
+				
+						// Quantity input group
+						var quantityInputGroup = $('<div class="col-md-8 input-group quantity-input-group"></div>');
+						var prependButton = $('<div class="input-group-prepend pe-1"></div>');
+						var minusButton = $('<a href="#" class="btn btn-secondary js_add_cart_json minus-btn" aria-label="Remove one" title="Remove one"><i class="fa fa-minus"></i></a>');
+						var inputField = $('<input type="text" class="form-control text-center quantity" data-min="0" name="add_qty" value="0" style="width: 50px;">');
+						var appendButton = $('<div class="input-group-append ps-1"></div>');
+						var plusButton = $('<a href="#" class="btn btn-secondary js_add_cart_json plus-btn" aria-label="Add one" title="Add one"><i class="fa fa-plus"></i></a>');
+				
+						// Append buttons to input group
+						prependButton.append(minusButton);
+						appendButton.append(plusButton);
+						quantityInputGroup.append(prependButton);
+						quantityInputGroup.append(inputField);
+						quantityInputGroup.append(appendButton);
+				
+						// Append size and quantity inputs to the row
+						row.append(sizeElement);
+						row.append(quantityInputGroup);
+				
+						// Append row to dynamic container
+						dynamicRowsContainer.append(row);
+					});
+				
+					// Add event listener to check for input field values and disable buttons
+					dynamicRowsContainer.on('input', '.quantity', function () {
+						var hasValueGreaterThanZero = false;
+						$('.quantity').each(function () {
+							if (parseInt($(this).val()) > 0) {
+								hasValueGreaterThanZero = true;
+							}
+						});
+				
+						if (hasValueGreaterThanZero) {
+							$('#generate-players-btn').prop('disabled', true);
+							$('#warning-message').text('Please clear the quantity to proceed.');
+						} else {
+							$('#generate-players-btn').prop('disabled', false);
+							$('#warning-message').text('');
+						}
+					});
+				});
+				
 				$('#generate-players-btn').click(function () {
 					var numRows = parseInt($('#num-rows-input').val());
 					var dynamicRowsContainer = $('#dynamic-rows-container');
-
+				
 					var productSizeJson = $(this).data('product-json'); // Retrieve the product size JSON from the data attribute
 					var availableSizes = productSizeJson.available_sizes;
-					
+				
+					// Check if there are quantities in the second function
+					var hasQuantity = false;
+					$('.quantity').each(function () {
+						if (parseInt($(this).val()) > 0) {
+							hasQuantity = true;
+						}
+					});
+				
+					if (hasQuantity) {
+						$('#show-warning').show().delay(3000).hide(1);
+						return; // Prevent the rest of the code from running
+					}
+				
+					// If numRows is >= 1, disable the quantity inputs and buttons in the second function
+					if (numRows >= 1) {
+						$('.quantity').prop('disabled', true);
+						$('.minus-btn').addClass('disabled').prop('disabled', true);
+						$('.plus-btn').addClass('disabled').prop('disabled', true);
+					} else {
+						$('.quantity').prop('disabled', false);
+						$('.minus-btn').removeClass('disabled').prop('disabled', false);
+						$('.plus-btn').removeClass('disabled').prop('disabled', false);
+					}
+				
 					dynamicRowsContainer.empty(); // Clear previous rows
-					
+				
 					for (var i = 0; i < numRows; i++) {
 						var row = $('<div class="row mb-2"></div>'); // Added mb-2 for spacing between rows
-						
+				
 						var nameInputColumn = $('<div class="col-md-4"></div>');
 						var jerseyInputColumn = $('<div class="col-md-4"></div>');
 						var sizeInputColumn = $('<div class="col-md-4 d-flex align-items-center"></div>'); // Added d-flex and align-items-center classes
-						
+				
 						var nameInput = $('<input type="text" class="form-control" placeholder="Player name" name="name[]">');
 						var jerseyInput = $('<input type="number" class="form-control" placeholder="Jersey number" name="jersey_number[]">');
-						
+				
 						// Create a label and select element for size
 						var sizeLabel = $('<label for="size' + i + '" class="mr-2">Size:  </label>'); // Added class mr-2 for margin-right
 						var sizeSelect = $('<select class="form-control" id="size' + i + '" name="size[]"></select>');
-						
+				
 						// Dynamically populate the sizeSelect with availableSizes
-						availableSizes.forEach(function(size) {
+						availableSizes.forEach(function (size) {
 							sizeSelect.append($('<option></option>').attr('value', size).text(size));
 						});
-
+				
 						nameInputColumn.append(nameInput);
 						jerseyInputColumn.append(jerseyInput);
-						
+				
 						// Append the label and select element to the sizeInputColumn
 						sizeInputColumn.append(sizeLabel);
 						sizeInputColumn.append(sizeSelect);
-						
+				
 						row.append(nameInputColumn);
 						row.append(jerseyInputColumn);
 						row.append(sizeInputColumn);
-						
+				
 						dynamicRowsContainer.append(row);
 					}
 				});
@@ -543,53 +631,6 @@ export const webToPrint = {
 					}
 					return null;
 				}
-
-				var sizeQuantityList = [];
-
-				$(document).ready(function () {
-					var dynamicRowsContainer = $('#dynamic-rows-container1');
-					var productSizeJson = $('#collapseThree').data('product-json'); // Retrieve the product size JSON from the data attribute
-				
-					// Check if productSizeJson is valid
-					if (!productSizeJson || !productSizeJson.available_sizes || !Array.isArray(productSizeJson.available_sizes)) {
-						return;
-					}
-				
-					var availableSizes = productSizeJson.available_sizes;
-					
-					dynamicRowsContainer.empty(); // Clear previous rows
-					
-					// Loop through availableSizes and render each size with quantity inputs
-					availableSizes.forEach(function(size) {
-						// Create a new row container for each size and quantity inputs
-						var row = $('<div class="row size-row mb-2"></div>');
-						
-						// Size text
-						var sizeElement = $('<div class="col-md-4 size-option">' + size + '</div>');
-						
-						// Quantity input group
-						var quantityInputGroup = $('<div class="col-md-8 input-group quantity-input-group"></div>');
-						var prependButton = $('<div class="input-group-prepend pe-1"></div>');
-						var minusButton = $('<a href="#" class="btn btn-secondary js_add_cart_json" aria-label="Remove one" title="Remove one"><i class="fa fa-minus"></i></a>');
-						var inputField = $('<input type="text" class="form-control text-center quantity" data-min="0" name="add_qty" value="0" style="width: 50px;">');
-						var appendButton = $('<div class="input-group-append ps-1"></div>');
-						var plusButton = $('<a href="#" class="btn btn-secondary js_add_cart_json" aria-label="Add one" title="Add one"><i class="fa fa-plus"></i></a>');
-					
-						// Append buttons to input group
-						prependButton.append(minusButton);
-						appendButton.append(plusButton);
-						quantityInputGroup.append(prependButton);
-						quantityInputGroup.append(inputField);
-						quantityInputGroup.append(appendButton);
-						
-						// Append size and quantity inputs to the row
-						row.append(sizeElement);
-						row.append(quantityInputGroup);
-						
-						// Append row to dynamic container
-						dynamicRowsContainer.append(row);
-					});
-				});
 
 				function getBulkOrderHtml(sizeCount) {
 					if (Array.isArray(sizeCount) && sizeCount.length > 0) {

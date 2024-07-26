@@ -294,19 +294,20 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div style="display:none;" id="show-warning" class="mt16 mb16 alert alert-danger">Please clear the quantity below to proceed.</div>
                                         </div>
                                     </div>
                                 </div>
                             </t>
                         </div>
                         <div id="cautionfileAlert" class="float-end postion-absulate mt-1 toast text-white bg-danger border-0" role="alert" data-delay="3000">
-                                <div class="d-flex">
-                                    <div class="toast-body">
-                                        Only image type files are allowed.
-                                    </div>
-                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    Only image type files are allowed.
                                 </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                             </div>
+                        </div>
                         <div class=" mt16">
                             <div class="float-left">
                                 <button class="btn" id="reset-design">
