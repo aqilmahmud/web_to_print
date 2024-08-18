@@ -160,7 +160,9 @@
                                                         <img class="mr8" src="/web_to_print/static/img/text.png" alt=""/>
                                                             Text <i style="font-size:large;" class="mt4 fa fa-caret-down pull-right"></i>
                                                     </button>
-                                                    <p style="float: right; margin-top: 10px; margin-bottom: 0;">+ <t t-esc="area.text_charge"/>$</p>
+                                                    <t t-if="area.image_charge &gt; 0">
+                                                        <p style="float: right; margin-top: 10px; margin-bottom: 0;">+ <t t-esc="area.text_charge"/>$</p>
+                                                    </t>
                                                 </h5>
                                             </div>
 
@@ -251,7 +253,9 @@
                                                         <img class="mr8" src="/web_to_print/static/img/img.png" alt=""/>
                                                             Image<i style="font-size:large;" class="mt4 fa fa-caret-down pull-right"></i>
                                                     </button>
-                                                    <p style="float: right; margin-top: 10px; margin-bottom: 0;">+ <t t-esc="area.image_charge"/>$</p>
+                                                    <t t-if="area.image_charge &gt; 0">
+                                                        <p style="float: right; margin-top: 10px; margin-bottom: 0;">+ <t t-esc="area.image_charge"/>$</p>
+                                                    </t>
                                                 </h5>
                                             </div>
                                             <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-bs-parent="#accordion">
@@ -341,7 +345,7 @@
                             </div>
                             <div class="float-end mb16">
                                 <button id="preview-design" class="ml16 btn btn-outline-success">Preview</button>
-                                <button id="save-design" data-bs-toggle="modal" data-bs-target="#add-to-cart-modal" class="ml16 btn btn-success">Save and Add to cart</button>
+                                <button id="save-design" data-bs-toggle="modal" data-bs-target="#add-to-cart-modal" class="ml16 btn btn-success">Save Design</button>
                             </div>
                             <div style="display:none;" id="add-cart-msg" class="mt16 mb16 alert alert-danger">No customization done</div>
                         </div>

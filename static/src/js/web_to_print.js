@@ -853,49 +853,54 @@ export const webToPrint = {
 				});
 
 
-				function resizeCanvas () {
-					let { canvas, id, node, drawingarea} = getActiveCanvas();
-					var	image_div = $(`#area_${id}`).children('.img-canvas')[0],
-						image = $(image_div).children('img')[0],
-						actualWidth = image.naturalWidth,
-						actualHeight = image.naturalHeight,
-						ratioW = actualWidth / resize_ratio[`width-${id}`] ,
-						ratioH = actualHeight/ resize_ratio[`height-${id}`] ,
-						ratioT = actualHeight / parseInt(resize_ratio[`top-${id}`], 10),
-						ratioL = actualWidth / parseInt(resize_ratio[`left-${id}`],10);
-
-						var new_canvas_width = $(image).width() / ratioW
-						var new_canvas_height =$(image).height() / ratioH
-						var new_left = ((($(`#area_${id}`).width()-$(image).width())/2)+($(image).width() / ratioL))
+				function resizeCanvas() {
+					let { canvas, node, drawingarea } = getActiveCanvas();
+					var image = node.find('.img-canvas img')[0];
+					var actualWidth = image.naturalWidth;
+					var actualHeight = image.naturalHeight;
+				
+					var ratioW = actualWidth / canvas.getWidth();
+					var ratioH = actualHeight / canvas.getHeight();
+					
+					// Calculating the ratioT and ratioL
+					var ratioT = actualHeight / parseInt(canvas.getHeight(), 10);
+					var ratioL = actualWidth / parseInt(canvas.getWidth(), 10);
+				
+					// Setting the new canvas dimensions
+					var new_canvas_width = $(image).width() / ratioW;
+					var new_canvas_height = $(image).height() / ratioH;
+				
+					// Calculating new left and top positions to center the canvas
+					var new_left = (node.width() - new_canvas_width) / 2;
+					var new_top = (node.height() - new_canvas_height) / 2;
+				
+					// Resizing the canvas
 					canvas.setWidth(new_canvas_width);
 					canvas.setHeight(new_canvas_height);
-
-					$.each(canvas.getObjects(),function () {
-						objectResize(this)
-					 })
-
-					drawingarea.css(({"width":$(image).width() / ratioW, "height":$(image).height() / ratioH , "top":$(image).height() / ratioT,"left":new_left, }))
+				
+					// Updating the drawing area with the new dimensions and centered position
+					drawingarea.css({
+						"width": new_canvas_width,
+						"height": new_canvas_height,
+						"left": new_left,
+					});
+				
+					// Rendering the canvas
 					canvas.renderAll();
-				  };
-
-
-
-				// Resize board
+				}
+				
+				// Resize board on window resize
 				$(window).resize(resizeCanvas);
+				
+				$.each(canvas_drawing_objects, function () {
+					this.on('object:selected', objectSelected);
+				});
+            }
+        });
+    },
 
-			}
-
-		});
-
-		// return canvas_drawing_objects
-
-	},
-
-	canvas_drawing_objects : canvas_drawing_objects,
+    canvas_drawing_objects: canvas_drawing_objects,
 
 };
 
 registry.category("services").add("web_to_print", webToPrint);
-
-// 	return canvas_drawing_objects
-// });
