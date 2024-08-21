@@ -212,7 +212,7 @@ export const webToPrint = {
 					let { canvas, id, node, drawingarea } = getActiveCanvas();
 					var textInput = $(ev.currentTarget).prev('.text-string');
 					var text = textInput.val();
-
+				
 					var newText = new fabric.Text(text, {
 						left: fabric.util.getRandomInt(0, drawingarea.width()),
 						top: fabric.util.getRandomInt(0, drawingarea.height()),
@@ -224,7 +224,7 @@ export const webToPrint = {
 						fontWeight: '',
 						hasRotatingPoint: true
 					});
-
+				
 					canvas.add(newText);
 					resize_ratio[`object_scaleX${id}`] = newText.scaleX;
 					resize_ratio[`object_scaleY${id}`] = newText.scaleY;
@@ -233,55 +233,68 @@ export const webToPrint = {
 					objectResize(newText);
 					canvas.centerObject(newText);
 					var cords = newText._getLeftTopCoords();
-					resize_ratio[`object_top${id}`] = cords['y'] / newText.canvas.height;
-					resize_ratio[`object_left${id}`] = cords['x'] / newText.canvas.width;
+					resize_ratio[`object_top${id}`] = cords.y / newText.canvas.height;
+					resize_ratio[`object_left${id}`] = cords.x / newText.canvas.width;
 					canvas.item(canvas.item.length - 1).hasRotatingPoint = true;
-
+				
 					if (!canvas_texts[`obj_text${id}`]) {
 						canvas_texts[`obj_text${id}`] = [];
 					}
 					canvas_texts[`obj_text${id}`].push(newText);
-
+				
 					// Clear the text input field after adding the text
 					textInput.val('');
 				});
-
+				
 				$('.text-string').keydown(debounce(ev => {
 					let { canvas, id, node } = getActiveCanvas();
 					var activeObject = canvas.getActiveObject();
 					if (activeObject && activeObject.type === 'text') {
-						activeObject.set({ 'text': $(ev.currentTarget).val() });
-						objectResize(activeObject);
+						var originalLeft = activeObject.left;
+						var originalTop = activeObject.top;
+						var originalScaleX = activeObject.scaleX;
+						var originalScaleY = activeObject.scaleY;
+						var originalAngle = activeObject.angle;
+				
+						activeObject.set({
+							'text': $(ev.currentTarget).val(),
+							'left': originalLeft,
+							'top': originalTop,
+							'scaleX': originalScaleX,
+							'scaleY': originalScaleY,
+							'angle': originalAngle
+						});
+				
 						canvas.renderAll();
 					}
 				}, 300));
-
+				
 				// Update the textarea when a text object is selected
-				function updateTextInputOnSelection() {
-					let { canvas, id, node } = getActiveCanvas();
-
+				function updateTextInputOnSelection(canvas) {
 					canvas.on('selection:created', function (ev) {
 						var activeObject = ev.selected[0];
 						if (activeObject && activeObject.type === 'text') {
 							$('.text-string').val(activeObject.text);
 						}
 					});
-
+				
 					canvas.on('selection:updated', function (ev) {
 						var activeObject = ev.selected[0];
 						if (activeObject && activeObject.type === 'text') {
 							$('.text-string').val(activeObject.text);
 						}
 					});
-
+				
 					canvas.on('selection:cleared', function () {
 						$('.text-string').val('');
 					});
 				}
-
+				
 				$(document).ready(function () {
-					let { canvas, id, node } = getActiveCanvas();
-					updateTextInputOnSelection(canvas);
+					updateTextInputOnSelection(getActiveCanvas().canvas);
+					$('.canvas-container').on('click', function () {
+						updateTextInputOnSelection(getActiveCanvas().canvas);
+					});
 				});
 
 				$(document).on('click', '.rm-text', ev => {
